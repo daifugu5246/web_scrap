@@ -2,6 +2,7 @@ import threading
 import requests
 from pandas import ExcelWriter
 from pandas import DataFrame
+import openpyxl
 from selenium import webdriver
 from bs4 import BeautifulSoup
 import time
@@ -15,6 +16,9 @@ def get_news(sb):
     symbols = []
     titles = []
     articles = []
+
+    wb = openpyxl.Workbook()
+    wb.save(filename='news.xlsx')
 
     # selenium web driver
     driver = webdriver.Chrome()
@@ -34,26 +38,36 @@ def get_news(sb):
             timestamps.append(timestamp.text)
             # print(f'timestamp: {timestamp.text}')
         except:
-            timestamps.append('')
+            print(f'{sb} timestammp error')
+            timestamps.append('ERROR')
+        
         try:
-            symbol = soup.find('span', class_="description-cBh_FN2P")
-            symbols.append(symbol.text)
-            # print(f'symbol: {symbol.text}')
+            symbol = soup.find_all('span', class_="description-cBh_FN2P")
+            temp = []
+            for s in symbol:
+                temp.append(s.text)
+            symbols.append(','.join(temp))
+            # print(f'symbol: {symbol.text}'
         except:
-            symbols.append('')
+            print(f'{sb} symbol error')
+            symbols.append('ERROR')
+        
         try:
             title = soup.find('h1', class_='title-KX2tCBZq')
             titles.append(title.text)
             # print(f'title: {title.text}')
         except:
-            titles.append('')
+            print(f'{sb} title error')
+            titles.append('ERROR')
 
         try:
             article = soup.find('div', class_="body-KX2tCBZq body-pIO_GYwT content-pIO_GYwT body-RYg5Gq3E")
             articles.append(article.text)
             # print(f'article: {article.text}')
         except:
-            articles.append('')
+            print(f'{sb}: article error')
+            articles.append('ERROR')
+            continue
 
     df = DataFrame({'timestamps': timestamps, 'symbols': symbols, 'titles': titles, 'articles': articles})
     with ExcelWriter('news.xlsx', mode="a", engine="openpyxl") as writer:
