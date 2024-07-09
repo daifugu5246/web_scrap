@@ -28,17 +28,25 @@ def get_news(sb):
         href = link.get('href')
         r = requests.get(BASE_URL + href)
         soup = BeautifulSoup(r.content, 'lxml')
-        timestamp = soup.find('div', class_='timeAndSocialShare-RYg5Gq3E timeAndSocialShare-qiFSEvvz')
-        timestamps.append(timestamp.text)
-        # print(f'timestamp: {timestamp.text}')
 
-        symbol = soup.find('span', class_="description-cBh_FN2P")
-        symbols.append(symbol.text)
-        # print(f'symbol: {symbol.text}')
-
-        title = soup.find('h1', class_='title-KX2tCBZq')
-        titles.append(title.text)
-        # print(f'title: {title.text}')
+        try:
+            timestamp = soup.find('div', class_='timeAndSocialShare-RYg5Gq3E timeAndSocialShare-qiFSEvvz')
+            timestamps.append(timestamp.text)
+            # print(f'timestamp: {timestamp.text}')
+        except:
+            timestamps.append('')
+        try:
+            symbol = soup.find('span', class_="description-cBh_FN2P")
+            symbols.append(symbol.text)
+            # print(f'symbol: {symbol.text}')
+        except:
+            symbols.append('')
+        try:
+            title = soup.find('h1', class_='title-KX2tCBZq')
+            titles.append(title.text)
+            # print(f'title: {title.text}')
+        except:
+            titles.append('')
 
         try:
             article = soup.find('div', class_="body-KX2tCBZq body-pIO_GYwT content-pIO_GYwT body-RYg5Gq3E")
@@ -46,7 +54,6 @@ def get_news(sb):
             # print(f'article: {article.text}')
         except:
             articles.append('')
-            continue
 
     df = DataFrame({'timestamps': timestamps, 'symbols': symbols, 'titles': titles, 'articles': articles})
     with ExcelWriter('news.xlsx', mode="a", engine="openpyxl") as writer:
@@ -54,22 +61,22 @@ def get_news(sb):
 
 
 if __name__ == '__main__':
-    #thread1 = threading.Thread(target=get_news, args=['BANPU'])
+    thread1 = threading.Thread(target=get_news, args=['BANPU'])
     thread2 = threading.Thread(target=get_news, args=['PTT'])
-    #thread3 = threading.Thread(target=get_news, args=['PTTEP'])
-    #thread4 = threading.Thread(target=get_news, args=['PTTGC'])
-    #thread5 = threading.Thread(target=get_news, args=['IRPC'])
+    thread3 = threading.Thread(target=get_news, args=['PTTEP'])
+    thread4 = threading.Thread(target=get_news, args=['PTTGC'])
+    thread5 = threading.Thread(target=get_news, args=['IRPC'])
 
-    #thread1.start()
+    thread1.start()
     thread2.start()
-    #thread3.start()
-    #thread4.start()
-    #thread5.start()
+    thread3.start()
+    thread4.start()
+    thread5.start()
 
-    #thread1.join()
+    thread1.join()
     thread2.join()
-    #thread3.join()
-    #thread4.join()
-    #thread5.join()
+    thread3.join()
+    thread4.join()
+    thread5.join()
 
     print("Scraping news finished.")
