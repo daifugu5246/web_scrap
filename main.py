@@ -1,37 +1,24 @@
 import threading
 import requests
-from pandas import DataFrame
-import openpyxl
-from selenium import webdriver
 from bs4 import BeautifulSoup
-import time
+from pandas import DataFrame
 
 # const
-BASE_URL = 'https://th.tradingview.com'
+APIPath = 'https://news-headlines.tradingview.com/headlines/?lang=th&symbol=SET%3A'
+BaseURL = 'https://th.tradingview.com'
 
 def get_news(sb):
-    # data handler
     timestamps = []
     symbols = []
     titles = []
     articles = []
-
-    # wb = openpyxl.Workbook()
-    # wb.save(filename='news.xlsx')
-
-    # selenium web driver
-    driver = webdriver.Chrome()
-    MainURL = BASE_URL + f'/symbols/SET-{sb}/news/'
-    driver.get(MainURL)
-    time.sleep(5)
-    # bs4 web scraping
-    soup = BeautifulSoup(driver.page_source, 'lxml')
-    links = soup.find_all('a',class_="card-DmjQR0Aa card-Whv2Noj0 card-o5eVjfTA")
+    response = requests.get(APIPath+sb)
+    if response.status_code != 200: print('API Error')
+    data = response.json()
+    links = [headline['storyPath'] for headline in data]
     for link in links:
-        href = link.get('href')
-        r = requests.get(BASE_URL + href)
-        soup = BeautifulSoup(r.content, 'lxml')
-
+        r = requests.get(BaseURL+link)
+        soup = BeautifulSoup(r.content,'lxml')
         try:
             timestamp = soup.find('div', class_='timeAndSocialShare-RYg5Gq3E timeAndSocialShare-qiFSEvvz')
             timestamps.append(timestamp.text)
@@ -46,7 +33,7 @@ def get_news(sb):
             for s in symbol:
                 temp.append(s.text)
             symbols.append(','.join(temp))
-            # print(f'symbol: {symbol.text}'
+
         except:
             print(f'{sb} symbol error')
             symbols.append('ERROR')
@@ -54,7 +41,7 @@ def get_news(sb):
         try:
             title = soup.find('h1', class_='title-KX2tCBZq')
             titles.append(title.text)
-            # print(f'title: {title.text}')
+
         except:
             print(f'{sb} title error')
             titles.append('ERROR')
@@ -62,7 +49,7 @@ def get_news(sb):
         try:
             article = soup.find('div', class_="body-KX2tCBZq body-pIO_GYwT content-pIO_GYwT body-RYg5Gq3E")
             articles.append(article.text)
-            # print(f'article: {article.text}')
+
         except:
             print(f'{sb}: article error')
             articles.append('ERROR')
@@ -87,9 +74,3 @@ if __name__ == '__main__':
     thread3.start()
     thread4.start()
     thread5.start()
-
-    """ thread1.join()
-    thread2.join()
-    thread3.join()
-    thread4.join()
-    thread5.join() """
