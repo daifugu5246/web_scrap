@@ -3,6 +3,7 @@
 pip install requests
 pip install beautifulsoup4
 pip install lxml
+pip install openpyxl
 ```
 ### Run โปรเกรม
 ```
