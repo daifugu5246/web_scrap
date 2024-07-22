@@ -1,6 +1,5 @@
 import threading
 import requests
-from pandas import ExcelWriter
 from pandas import DataFrame
 import openpyxl
 from selenium import webdriver
@@ -17,8 +16,8 @@ def get_news(sb):
     titles = []
     articles = []
 
-    wb = openpyxl.Workbook()
-    wb.save(filename='news.xlsx')
+    # wb = openpyxl.Workbook()
+    # wb.save(filename='news.xlsx')
 
     # selenium web driver
     driver = webdriver.Chrome()
@@ -70,8 +69,10 @@ def get_news(sb):
             continue
 
     df = DataFrame({'timestamps': timestamps, 'symbols': symbols, 'titles': titles, 'articles': articles})
-    with ExcelWriter('news.xlsx', mode="a", engine="openpyxl") as writer:
-        df.to_excel(writer, sheet_name=sb)
+    # with ExcelWriter('news.xlsx', mode="a", engine="openpyxl") as writer:
+    file = sb.lower() + '_news.csv'
+    df.to_csv(file, encoding='utf-8', index=False)
+    print(file + ' is done')
 
 
 if __name__ == '__main__':
@@ -87,10 +88,8 @@ if __name__ == '__main__':
     thread4.start()
     thread5.start()
 
-    thread1.join()
+    """ thread1.join()
     thread2.join()
     thread3.join()
     thread4.join()
-    thread5.join()
-
-    print("Scraping news finished.")
+    thread5.join() """
